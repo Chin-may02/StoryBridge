@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>📚 StoryBridge - Book/Movie Recommender</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <h1>📚 StoryBridge</h1>
+  <p>Enter a book or movie title:</p>
+
+  <input id="titleInput" list="titleList" placeholder="e.g., Harry Potter" />
+  <datalist id="titleList">
+    {% for title in titles %}
+      <option value="{{ title }}">
+    {% endfor %}
+  </datalist>
+  <button onclick="getRecommendations()">Recommend</button>
+
+  <div id="results"></div>
+
+  <script>
+    async function getRecommendations() {
+      const title = document.getElementById("titleInput").value;
+      const res = await fetch("/recommend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title })
+      });
+      const data = await res.json();
+      let html = "<h2>Recommendations</h2>";
+      data.forEach(item => {
+        html += `<div class="card">
+          <h3>${item.title} (${item.type})</h3>
+          <p>${item.description}</p>
+          <p><strong>Similarity:</strong> ${item.score}</p>
+        </div>`;
+      });
+      document.getElementById("results").innerHTML = html;
+    }
+  </script>
+</body>
+</html>
