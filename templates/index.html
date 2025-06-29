@@ -1,73 +1,187 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>📚 StoryBridge</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/static/styles.css">
-  <style>
-    body {
-      background-color: #f2f2f2;
-    }
-    .container {
-      max-width: 800px;
-      margin-top: 50px;
-      background-color: white;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
-    }
-    .card {
-      margin-top: 15px;
-    }
-    #results {
-      margin-top: 30px;
-    }
-  </style>
-</head>
-<body>
+  <link rel="icon" href="data:,📚">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <div class="container text-center">
-    <h1 class="mb-4">📚 StoryBridge</h1>
-    <p class="lead">Get movie or book recommendations based on your favorite titles</p>
-    
-    <input id="titleInput" list="titleList" class="form-control mb-3" placeholder="Type a book or movie title..." />
+  <!-- Bootstrap & Fonts -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Your Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="dark-theme">
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+  <div class="container">
+    <a class="navbar-brand logo-text" href="#">📚 StoryBridge</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="#">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#about">About</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#search">Search</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Slideshow -->
+<div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
+  <div class="carousel-indicators">
+    {% for i in range(popular_books|length + popular_movies|length) %}
+      <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="{{ i }}" class="{% if i == 0 %}active{% endif %}" aria-current="{% if i == 0 %}true{% endif %}" aria-label="Slide {{ i + 1 }}"></button>
+    {% endfor %}
+  </div>
+  <div class="carousel-inner">
+    {% for item in popular_books + popular_movies %}
+      <div class="carousel-item {% if loop.index0 == 0 %}active{% endif %}">
+        <div class="carousel-content">
+          <img src="{{ item.image_url if item.image_url and item.image_url != 'nan' else 'https://via.placeholder.com/1600x900?text=Slide+Image' }}" class="d-block w-100" alt="{{ item.title }}">
+          <div class="carousel-caption d-none d-md-block">
+            <h5 class="carousel-title">{{ item.title }}</h5>
+            <p class="carousel-desc">{{ item.description }}</p>
+            <span class="badge {{ 'bg-primary' if item.type == 'book' else 'bg-success' }}">{{ item.type }}</span>
+            <a href="#search" class="btn neon-button mt-3">Discover Similar</a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Previous</span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Next</span>
+  </button>
+</div>
+
+<!-- Hero Section (Search) -->
+<div class="hero-section text-center" id="search">
+  <h1 class="display-4 fw-bold logo-text">📚 StoryBridge</h1>
+  <p class="lead tagline">Find the stories you were meant to discover.</p>
+
+  <div class="search-block mt-4 mx-auto">
+    <input id="titleInput" list="titleList" class="form-control form-control-lg shadow-lg" placeholder="Enter a book or movie title...">
     <datalist id="titleList">
       {% for title in titles %}
         <option value="{{ title }}">
       {% endfor %}
     </datalist>
-    
-    <button class="btn btn-primary" onclick="getRecommendations()">🔍 Recommend</button>
-
-    <div id="results" class="text-start"></div>
+    <button class="btn neon-button mt-3" onclick="getRecommendations()">✨ Discover</button>
   </div>
 
-  <script>
-    async function getRecommendations() {
-      const title = document.getElementById("titleInput").value;
-      const res = await fetch("/recommend", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title })
-      });
-      const data = await res.json();
+  <div id="loader" class="spinner-border text-light mt-4" role="status" style="display: none;"></div>
+</div>
 
-      let booksHTML = "<h3 class='mt-4'>📚 Recommended Books</h3>";
-      let moviesHTML = "<h3 class='mt-4'>🎬 Recommended Movies</h3>";
+<!-- Results -->
+<div class="container my-5">
+  <div id="results"></div>
+</div>
 
-      data.forEach(item => {
-        const card = `
-          <div class="card p-3 shadow-sm">
-            <h5>${item.title}</h5>
-            <p>${item.description}</p>
-            <small><strong>Similarity:</strong> ${item.score}</small>
-          </div>`;
-        if (item.type === "book") booksHTML += card;
-        else if (item.type === "movie") moviesHTML += card;
-      });
+<!-- About Section -->
+<section class="about-section text-center" id="about">
+  <div class="container">
+    <h2 class="section-title">About StoryBridge</h2>
+    <p class="lead">StoryBridge is your ultimate companion for discovering books and movies that match your taste. Powered by advanced recommendation algorithms, we bridge the worlds of literature and cinema to bring you stories you'll love.</p>
+    <a href="#search" class="btn neon-button mt-3">Start Exploring</a>
+  </div>
+</section>
 
-      document.getElementById("results").innerHTML = booksHTML + "<hr>" + moviesHTML;
+<!-- Footer -->
+<footer class="footer text-center py-4">
+  <div class="container">
+    <p class="mb-0">© 2023 StoryBridge. All rights reserved.</p>
+  </div>
+</footer>
+
+<!-- 🔔 Toast Error -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+  <div id="toastError" class="toast align-items-center text-white bg-danger border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMessage">Please enter a title.</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" onclick="hideToast()"></button>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  function showToast(msg) {
+    document.getElementById("toastMessage").textContent = msg;
+    new bootstrap.Toast(document.getElementById("toastError")).show();
+  }
+
+  function hideToast() {
+    bootstrap.Toast.getInstance(document.getElementById("toastError")).hide();
+  }
+
+  async function getRecommendations() {
+    const title = document.getElementById("titleInput").value;
+    if (!title.trim()) {
+      showToast("Please enter a title.");
+      return;
     }
-  </script>
+
+    document.getElementById("loader").style.display = "inline-block";
+    document.getElementById("results").innerHTML = "";
+
+    const res = await fetch("/recommend", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title })
+    });
+
+    const data = await res.json();
+    document.getElementById("loader").style.display = "none";
+
+    if (!data.length) {
+      document.getElementById("results").innerHTML =
+        `<div class="text-warning text-center fs-5 mt-5">😞 No results found for "<strong>${title}</strong>"</div>`;
+      return;
+    }
+
+    let booksHTML = "<h3 class='section-title text-primary-emphasis'>📚 Books You May Like</h3><div class='row g-4'>";
+    let moviesHTML = "<h3 class='section-title text-success-emphasis mt-5'>🎬 Movies That Match</h3><div class='row g-4'>";
+
+    data.forEach(item => {
+      const image = item.image_url && item.image_url !== 'nan' ? item.image_url : 'https://via.placeholder.com/160x220?text=No+Image';
+
+      const card = `
+        <div class="col-md-6 col-lg-4">
+          <div class="result-card glass-card p-3 h-100 shadow-sm">
+            <img src="${image}" alt="${item.title}" class="img-fluid result-img mb-3">
+            <h5>${item.title}</h5>
+            <p class="result-desc">${item.description}</p>
+            <span class="badge ${item.type === 'book' ? 'bg-primary' : 'bg-success'}">${item.type}</span>
+            <p class="text-muted mt-2"><small>🧠 Similarity Score: <strong>${item.score}</strong></small></p>
+          </div>
+        </div>`;
+
+      if (item.type === "book") booksHTML += card;
+      else moviesHTML += card;
+    });
+
+    booksHTML += "</div>";
+    moviesHTML += "</div>";
+
+    document.getElementById("results").innerHTML = booksHTML + moviesHTML;
+  }
+</script>
 </body>
 </html>

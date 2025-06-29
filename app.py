@@ -23,15 +23,21 @@ def get_recommendations(title, top_n=5):
             'type': data.iloc[i]['type'],
             'score': round(score, 3),
             'image_url': data.iloc[i].get('image_url', '')  # might be NaN for movies
-    })
-
+        })
     return results
+
+# Function to get popular items for slideshow
+def get_popular_items(type, top_n=5):
+    items = data[data['type'] == type].sample(top_n)  # Random sample for now; replace with actual popularity metric if available
+    return items.to_dict('records')
 
 # Routes
 @app.route('/')
 def home():
     titles = data['title'].tolist()
-    return render_template('index.html', titles=titles)
+    popular_books = get_popular_items('book', 5)
+    popular_movies = get_popular_items('movie', 5)
+    return render_template('index.html', titles=titles, popular_books=popular_books, popular_movies=popular_movies)
 
 @app.route('/recommend', methods=['POST'])
 def recommend():
