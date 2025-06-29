@@ -21,8 +21,10 @@ def get_recommendations(title, top_n=5):
             'title': data.iloc[i]['title'],
             'description': data.iloc[i]['description'][:300] + '...',
             'type': data.iloc[i]['type'],
-            'score': round(score, 3)
-        })
+            'score': round(score, 3),
+            'image_url': data.iloc[i].get('image_url', '')  # might be NaN for movies
+    })
+
     return results
 
 # Routes
