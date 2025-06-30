@@ -7,7 +7,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 books = pd.read_csv('data/books.csv')
 movies = pd.read_csv('data/tmdb_5000_movies.csv')
 
-# Create fake descriptions for books
+# 🟡 FIXED: Create fake descriptions for books
 books = books[['title', 'authors']].dropna().drop_duplicates()
 books['description'] = books['title'] + ' by ' + books['authors']
 
@@ -34,4 +34,4 @@ cos_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
 # Save
 data.to_csv('combined_data.csv', index=False)
 np.save('cosine_matrix.npy', cos_sim)
-print("Model and data saved.")
+print("✅ Model and data saved.")
