@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>📚 StoryBridge</title>
+  <title>📚 StoryBridge - Search</title>
   <link rel="icon" href="data:,📚">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -18,60 +18,28 @@
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
   <div class="container">
-    <a class="navbar-brand logo-text" href="#">📚 StoryBridge</a>
+    <a class="navbar-brand logo-text" href="/">📚 StoryBridge</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
         <li class="nav-item">
-          <a class="nav-link" href="#">Home</a>
+          <a class="nav-link" href="/">Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#about">About</a>
+          <a class="nav-link" href="/#about">About</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#search">Search</a>
+          <a class="nav-link active" href="/recommend">Search</a>
         </li>
       </ul>
     </div>
   </div>
 </nav>
 
-<!-- Slideshow -->
-<div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
-  <div class="carousel-indicators">
-    {% for i in range(popular_books|length + popular_movies|length) %}
-      <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="{{ i }}" class="{% if i == 0 %}active{% endif %}" aria-current="{% if i == 0 %}true{% endif %}" aria-label="Slide {{ i + 1 }}"></button>
-    {% endfor %}
-  </div>
-  <div class="carousel-inner">
-    {% for item in popular_books + popular_movies %}
-      <div class="carousel-item {% if loop.index0 == 0 %}active{% endif %}">
-        <div class="carousel-content">
-          <img src="{{ item.image_url if item.image_url and item.image_url != 'nan' else 'https://via.placeholder.com/1600x900?text=Slide+Image' }}" class="d-block w-100" alt="{{ item.title }}">
-          <div class="carousel-caption d-none d-md-block">
-            <h5 class="carousel-title">{{ item.title }}</h5>
-            <p class="carousel-desc">{{ item.description }}</p>
-            <span class="badge {{ 'bg-primary' if item.type == 'book' else 'bg-success' }}">{{ item.type }}</span>
-            <a href="#search" class="btn neon-button mt-3">Discover Similar</a>
-          </div>
-        </div>
-      </div>
-    {% endfor %}
-  </div>
-  <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Previous</span>
-  </button>
-  <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Next</span>
-  </button>
-</div>
-
 <!-- Hero Section (Search) -->
-<div class="hero-section text-center" id="search">
+<div class="hero-section text-center">
   <h1 class="display-4 fw-bold logo-text">📚 StoryBridge</h1>
   <p class="lead tagline">Find the stories you were meant to discover.</p>
 
@@ -92,15 +60,6 @@
 <div class="container my-5">
   <div id="results"></div>
 </div>
-
-<!-- About Section -->
-<section class="about-section text-center" id="about">
-  <div class="container">
-    <h2 class="section-title">About StoryBridge</h2>
-    <p class="lead">StoryBridge is your ultimate companion for discovering books and movies that match your taste. Powered by advanced recommendation algorithms, we bridge the worlds of literature and cinema to bring you stories you'll love.</p>
-    <a href="#search" class="btn neon-button mt-3">Start Exploring</a>
-  </div>
-</section>
 
 <!-- Footer -->
 <footer class="footer text-center py-4">

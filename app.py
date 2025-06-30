@@ -33,11 +33,15 @@ def get_popular_items(type, top_n=5):
 
 # Routes
 @app.route('/')
-def home():
-    titles = data['title'].tolist()
+def landing():
     popular_books = get_popular_items('book', 5)
     popular_movies = get_popular_items('movie', 5)
-    return render_template('index.html', titles=titles, popular_books=popular_books, popular_movies=popular_movies)
+    return render_template('landing.html', popular_books=popular_books, popular_movies=popular_movies)
+
+@app.route('/recommend')
+def recommend_page():
+    titles = data['title'].tolist()
+    return render_template('recommend.html', titles=titles)
 
 @app.route('/recommend', methods=['POST'])
 def recommend():
