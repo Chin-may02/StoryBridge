@@ -2,15 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>📚 StoryBridge</title>
+  <title>📚 StoryBridge - Connect Through Stories</title>
   <link rel="icon" href="data:,📚">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Discover books and movies that bridge your imagination">
 
   <!-- Bootstrap & Fonts -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
-  <!-- Your Custom CSS -->
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body class="dark-theme">
@@ -18,75 +20,200 @@
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
   <div class="container">
-    <a class="navbar-brand logo-text" href="/">📚 StoryBridge</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <a class="navbar-brand logo-text" href="/">
+      <i class="fas fa-book-reader"></i> StoryBridge
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
         <li class="nav-item">
-          <a class="nav-link" href="/">Home</a>
+          <a class="nav-link active" href="/"><i class="fas fa-home"></i> Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#about">About</a>
+          <a class="nav-link" href="#about"><i class="fas fa-info-circle"></i> About</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/recommend">Search</a>
+          <a class="nav-link" href="/recommend"><i class="fas fa-search"></i> Explore</a>
         </li>
       </ul>
     </div>
   </div>
 </nav>
 
-<!-- Slideshow -->
-<div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
-  <div class="carousel-indicators">
-    {% for i in range(popular_books|length + popular_movies|length) %}
-      <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="{{ i }}" class="{% if i == 0 %}active{% endif %}" aria-current="{% if i == 0 %}true{% endif %}" aria-label="Slide {{ i + 1 }}"></button>
-    {% endfor %}
+<!-- Hero Section -->
+<section class="hero-fullscreen">
+  <div class="hero-content">
+    <h1 class="mega-title">Welcome to StoryBridge</h1>
+    <p class="hero-subtitle">Where Books and Movies Unite</p>
+    <div class="hero-actions">
+      <a href="/recommend" class="btn neon-button primary-btn">
+        <i class="fas fa-compass"></i> Start Exploring
+      </a>
+      <a href="#featured" class="btn neon-button secondary-btn">
+        <i class="fas fa-star"></i> Featured Stories
+      </a>
+    </div>
   </div>
-  <div class="carousel-inner">
-    {% for item in popular_books + popular_movies %}
-      <div class="carousel-item {% if loop.index0 == 0 %}active{% endif %}">
-        <div class="carousel-content">
-          <img src="{{ item.image_url if item.image_url and item.image_url != 'nan' else 'https://via.placeholder.com/1600x900?text=Slide+Image' }}" class="d-block w-100" alt="{{ item.title }}">
-          <div class="carousel-caption d-none d-md-block">
-            <h5 class="carousel-title">{{ item.title }}</h5>
-            <p class="carousel-desc">{{ item.description }}</p>
-            <span class="badge {{ 'bg-primary' if item.type == 'book' else 'bg-success' }}">{{ item.type }}</span>
-            <a href="/recommend" class="btn neon-button mt-3">Discover Similar</a>
+  <div class="hero-background">
+    <div class="floating-elements">
+      <span class="float-element">📚</span>
+      <span class="float-element">🎬</span>
+      <span class="float-element">✨</span>
+      <span class="float-element">📖</span>
+      <span class="float-element">🎭</span>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Section -->
+<section id="featured" class="featured-section">
+  <div class="container">
+    <h2 class="section-title">Featured Stories</h2>
+    <div class="featured-carousel">
+      {% for item in popular_books + popular_movies %}
+      <div class="featured-card">
+        <div class="card-image">
+          <img src="{{ item.image_url if item.image_url and item.image_url != 'nan' else 'https://via.placeholder.com/300x450' }}" 
+               alt="{{ item.title }}">
+          <div class="card-overlay">
+            <span class="badge {{ 'badge-book' if item.type == 'book' else 'badge-movie' }}">
+              <i class="fas {{ 'fa-book' if item.type == 'book' else 'fa-film' }}"></i> 
+              {{ item.type | title }}
+            </span>
+          </div>
+        </div>
+        <div class="card-content">
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.description[:150] }}...</p>
+          <a href="/recommend?title={{ item.title }}" class="btn neon-link">
+            Discover Similar <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- About Section -->
+<section id="about" class="about-section">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6">
+        <h2 class="section-title">About StoryBridge</h2>
+        <p class="about-text">
+          StoryBridge is your gateway to discovering connections between the worlds of literature and cinema. 
+          Our advanced recommendation system helps you find stories that resonate with your interests across both mediums.
+        </p>
+        <div class="feature-grid">
+          <div class="feature-item">
+            <i class="fas fa-magic"></i>
+            <h4>Smart Recommendations</h4>
+            <p>Powered by advanced AI algorithms</p>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-sync"></i>
+            <h4>Cross-Medium Discovery</h4>
+            <p>Find books based on movies you love, and vice versa</p>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-user-friends"></i>
+            <h4>Community Driven</h4>
+            <p>Benefit from collective wisdom</p>
           </div>
         </div>
       </div>
-    {% endfor %}
+      <div class="col-lg-6">
+        <div class="about-image">
+          <img src="{{ url_for('static', filename='about-illustration.svg') }}" alt="StoryBridge Concept">
+        </div>
+      </div>
+    </div>
   </div>
-  <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Previous</span>
-  </button>
-  <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Next</span>
-  </button>
-</div>
+</section>
 
-<!-- About Section -->
-<section class="about-section text-center" id="about">
+<!-- Stats Section -->
+<section class="stats-section">
   <div class="container">
-    <h2 class="section-title">About StoryBridge</h2>
-    <p class="lead">StoryBridge is your ultimate companion for discovering books and movies that match your taste. Powered by advanced recommendation algorithms, we bridge the worlds of literature and cinema to bring you stories you'll love.</p>
-    <a href="/recommend" class="btn neon-button mt-3">Start Exploring</a>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number">10K+</div>
+        <div class="stat-label">Books</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">5K+</div>
+        <div class="stat-label">Movies</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">50K+</div>
+        <div class="stat-label">Connections</div>
+      </div>
+    </div>
   </div>
 </section>
 
 <!-- Footer -->
-<footer class="footer text-center py-4">
+<footer class="footer">
   <div class="container">
-    <p class="mb-0">© 2023 StoryBridge. All rights reserved.</p>
+    <div class="footer-content">
+      <div class="footer-brand">
+        <h3 class="footer-logo">StoryBridge</h3>
+        <p>Connecting stories across mediums</p>
+      </div>
+      <div class="footer-links">
+        <div class="link-group">
+          <h4>Navigation</h4>
+          <a href="/">Home</a>
+          <a href="#about">About</a>
+          <a href="/recommend">Explore</a>
+        </div>
+        <div class="link-group">
+          <h4>Connect</h4>
+          <a href="#"><i class="fab fa-twitter"></i> Twitter</a>
+          <a href="#"><i class="fab fa-instagram"></i> Instagram</a>
+          <a href="#"><i class="fab fa-github"></i> GitHub</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2024 StoryBridge. All rights reserved.</p>
+    </div>
   </div>
 </footer>
 
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      document.querySelector(this.getAttribute('href')).scrollIntoView({
+        behavior: 'smooth'
+      });
+    });
+  });
+
+  // Animate elements on scroll
+  const animateOnScroll = () => {
+    const elements = document.querySelectorAll('.feature-item, .stat-card, .featured-card');
+    elements.forEach(element => {
+      const elementTop = element.getBoundingClientRect().top;
+      const elementBottom = element.getBoundingClientRect().bottom;
+      if (elementTop < window.innerHeight && elementBottom > 0) {
+        element.classList.add('animate');
+      }
+    });
+  };
+
+  window.addEventListener('scroll', animateOnScroll);
+  animateOnScroll(); // Initial check
+});
+</script>
+
 </body>
 </html>
+```

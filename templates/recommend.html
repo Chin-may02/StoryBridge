@@ -2,15 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>📚 StoryBridge - Search</title>
+  <title>📚 StoryBridge - Discover</title>
   <link rel="icon" href="data:,📚">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Find your next favorite story">
 
   <!-- Bootstrap & Fonts -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
-  <!-- Your Custom CSS -->
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body class="dark-theme">
@@ -18,88 +20,205 @@
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
   <div class="container">
-    <a class="navbar-brand logo-text" href="/">📚 StoryBridge</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <a class="navbar-brand logo-text" href="/">
+      <i class="fas fa-book-reader"></i> StoryBridge
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
         <li class="nav-item">
-          <a class="nav-link" href="/">Home</a>
+          <a class="nav-link" href="/"><i class="fas fa-home"></i> Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/#about">About</a>
+          <a class="nav-link" href="/#about"><i class="fas fa-info-circle"></i> About</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" href="/recommend">Search</a>
+          <a class="nav-link active" href="/recommend"><i class="fas fa-search"></i> Explore</a>
         </li>
       </ul>
     </div>
   </div>
 </nav>
 
-<!-- Hero Section (Search) -->
-<div class="hero-section text-center">
-  <h1 class="display-4 fw-bold logo-text">📚 StoryBridge</h1>
-  <p class="lead tagline">Find the stories you were meant to discover.</p>
+<!-- Search Hero Section -->
+<section class="search-hero">
+  <div class="container">
+    <div class="search-content">
+      <h1 class="search-title">Discover Your Next Story</h1>
+      <p class="search-subtitle">Enter a book or movie you love to find similar stories across both mediums</p>
+      
+      <div class="search-box">
+        <div class="search-input-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input 
+            id="titleInput" 
+            list="titleList" 
+            class="search-input" 
+            placeholder="Type a title you love..."
+            autocomplete="off"
+          >
+          <datalist id="titleList">
+            {% for title in titles %}
+              <option value="{{ title }}">
+            {% endfor %}
+          </datalist>
+        </div>
+        <button class="btn neon-button primary-btn" onclick="getRecommendations()">
+          <i class="fas fa-compass"></i> Discover
+        </button>
+      </div>
 
-  <div class="search-block mt-4 mx-auto">
-    <input id="titleInput" list="titleList" class="form-control form-control-lg shadow-lg" placeholder="Enter a book or movie title...">
-    <datalist id="titleList">
-      {% for title in titles %}
-        <option value="{{ title }}">
-      {% endfor %}
-    </datalist>
-    <button class="btn neon-button mt-3" onclick="getRecommendations()">✨ Discover</button>
+      <div class="search-filters">
+        <button class="filter-pill active" data-filter="all">All Stories</button>
+        <button class="filter-pill" data-filter="book">Books</button>
+        <button class="filter-pill" data-filter="movie">Movies</button>
+        <button class="filter-pill" data-filter="popular">Most Popular</button>
+      </div>
+    </div>
   </div>
+  
+  <!-- Animated Background -->
+  <div class="search-background">
+    <div class="floating-elements">
+      <span class="float-element">📚</span>
+      <span class="float-element">🎬</span>
+      <span class="float-element">✨</span>
+    </div>
+  </div>
+</section>
 
-  <div id="loader" class="spinner-border text-light mt-4" role="status" style="display: none;"></div>
+<!-- Loading Animation -->
+<div id="loader" class="loader-wrapper" style="display: none;">
+  <div class="loader">
+    <div class="book">
+      <div class="book-page"></div>
+      <div class="book-page"></div>
+      <div class="book-page"></div>
+    </div>
+    <p class="loader-text">Discovering stories...</p>
+  </div>
 </div>
 
-<!-- Results -->
-<div class="container my-5">
-  <div id="results"></div>
-</div>
+<!-- Results Section -->
+<section class="results-section" style="display: none;">
+  <div class="container">
+    <!-- Stats Cards -->
+    <div class="results-stats">
+      <div class="stat-card total-results">
+        <div class="stat-icon"><i class="fas fa-chart-bar"></i></div>
+        <div class="stat-info">
+          <h3 class="stat-number">0</h3>
+          <p class="stat-label">Total Results</p>
+        </div>
+      </div>
+      <div class="stat-card book-results">
+        <div class="stat-icon"><i class="fas fa-book"></i></div>
+        <div class="stat-info">
+          <h3 class="stat-number">0</h3>
+          <p class="stat-label">Books Found</p>
+        </div>
+      </div>
+      <div class="stat-card movie-results">
+        <div class="stat-icon"><i class="fas fa-film"></i></div>
+        <div class="stat-info">
+          <h3 class="stat-number">0</h3>
+          <p class="stat-label">Movies Found</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Grid -->
+    <div id="results" class="results-grid"></div>
+  </div>
+</section>
+
+<!-- No Results Section -->
+<section id="noResults" class="no-results-section" style="display: none;">
+  <div class="container text-center">
+    <div class="no-results-content">
+      <i class="fas fa-search fa-3x"></i>
+      <h2>No Results Found</h2>
+      <p>Try searching for a different title or check your spelling</p>
+      <button class="btn neon-button" onclick="document.getElementById('titleInput').focus()">
+        Try Another Search
+      </button>
+    </div>
+  </div>
+</section>
 
 <!-- Footer -->
-<footer class="footer text-center py-4">
+<footer class="footer">
   <div class="container">
-    <p class="mb-0">© 2023 StoryBridge. All rights reserved.</p>
+    <div class="footer-content">
+      <div class="footer-brand">
+        <h3 class="footer-logo">StoryBridge</h3>
+        <p>Connecting stories across mediums</p>
+      </div>
+      <div class="footer-links">
+        <div class="link-group">
+          <h4>Navigation</h4>
+          <a href="/">Home</a>
+          <a href="/#about">About</a>
+          <a href="/recommend">Explore</a>
+        </div>
+        <div class="link-group">
+          <h4>Connect</h4>
+          <a href="#"><i class="fab fa-twitter"></i> Twitter</a>
+          <a href="#"><i class="fab fa-instagram"></i> Instagram</a>
+          <a href="#"><i class="fab fa-github"></i> GitHub</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2024 StoryBridge. All rights reserved.</p>
+    </div>
   </div>
 </footer>
 
-<!-- 🔔 Toast Error -->
-<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
-  <div id="toastError" class="toast align-items-center text-white bg-danger border-0" role="alert">
-    <div class="d-flex">
-      <div class="toast-body" id="toastMessage">Please enter a title.</div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" onclick="hideToast()"></button>
+<!-- Toast Notifications -->
+<div class="toast-container">
+  <div id="toastError" class="toast" role="alert">
+    <div class="toast-content">
+      <i class="fas fa-exclamation-circle"></i>
+      <div class="toast-message" id="toastMessage"></div>
     </div>
+    <button class="toast-close" onclick="hideToast()">
+      <i class="fas fa-times"></i>
+    </button>
   </div>
 </div>
 
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  function showToast(msg) {
-    document.getElementById("toastMessage").textContent = msg;
-    new bootstrap.Toast(document.getElementById("toastError")).show();
+// Toast Notifications
+function showToast(msg) {
+  const toast = document.getElementById("toastError");
+  document.getElementById("toastMessage").textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => hideToast(), 3000);
+}
+
+function hideToast() {
+  document.getElementById("toastError").classList.remove('show');
+}
+
+// Get Recommendations
+async function getRecommendations() {
+  const title = document.getElementById("titleInput").value.trim();
+  if (!title) {
+    showToast("Please enter a title to discover similar stories");
+    return;
   }
 
-  function hideToast() {
-    bootstrap.Toast.getInstance(document.getElementById("toastError")).hide();
-  }
+  // Show loader
+  document.getElementById("loader").style.display = "flex";
+  document.querySelector(".results-section").style.display = "none";
+  document.getElementById("noResults").style.display = "none";
 
-  async function getRecommendations() {
-    const title = document.getElementById("titleInput").value;
-    if (!title.trim()) {
-      showToast("Please enter a title.");
-      return;
-    }
-
-    document.getElementById("loader").style.display = "inline-block";
-    document.getElementById("results").innerHTML = "";
-
+  try {
     const res = await fetch("/recommend", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -107,40 +226,110 @@
     });
 
     const data = await res.json();
+    
+    // Hide loader
     document.getElementById("loader").style.display = "none";
 
     if (!data.length) {
-      document.getElementById("results").innerHTML =
-        `<div class="text-warning text-center fs-5 mt-5">😞 No results found for "<strong>${title}</strong>"</div>`;
+      document.getElementById("noResults").style.display = "block";
       return;
     }
 
-    let booksHTML = "<h3 class='section-title text-primary-emphasis'>📚 Books You May Like</h3><div class='row g-4'>";
-    let moviesHTML = "<h3 class='section-title text-success-emphasis mt-5'>🎬 Movies That Match</h3><div class='row g-4'>";
+    // Update stats
+    const bookResults = data.filter(item => item.type === "book").length;
+    const movieResults = data.filter(item => item.type === "movie").length;
+    
+    document.querySelector(".total-results .stat-number").textContent = data.length;
+    document.querySelector(".book-results .stat-number").textContent = bookResults;
+    document.querySelector(".movie-results .stat-number").textContent = movieResults;
 
+    // Generate results HTML
+    let resultsHTML = "";
     data.forEach(item => {
-      const image = item.image_url && item.image_url !== 'nan' ? item.image_url : 'https://via.placeholder.com/160x220?text=No+Image';
+      const image = item.image_url && item.image_url !== 'nan' 
+        ? item.image_url 
+        : 'https://via.placeholder.com/300x450?text=No+Image';
 
-      const card = `
-        <div class="col-md-6 col-lg-4">
-          <div class="result-card glass-card p-3 h-100 shadow-sm">
-            <img src="${image}" alt="${item.title}" class="img-fluid result-img mb-3">
-            <h5>${item.title}</h5>
-            <p class="result-desc">${item.description}</p>
-            <span class="badge ${item.type === 'book' ? 'bg-primary' : 'bg-success'}">${item.type}</span>
-            <p class="text-muted mt-2"><small>🧠 Similarity Score: <strong>${item.score}</strong></small></p>
+      resultsHTML += `
+        <div class="result-card ${item.type}-card">
+          <div class="card-image">
+            <img src="${image}" alt="${item.title}">
+            <div class="card-overlay">
+              <span class="badge badge-${item.type}">
+                <i class="fas fa-${item.type === 'book' ? 'book' : 'film'}"></i> 
+                ${item.type}
+              </span>
+            </div>
           </div>
-        </div>`;
-
-      if (item.type === "book") booksHTML += card;
-      else moviesHTML += card;
+          <div class="card-content">
+            <h3>${item.title}</h3>
+            <p>${item.description}</p>
+            <div class="card-footer">
+              <div class="similarity-score">
+                <i class="fas fa-brain"></i>
+                <span>${Math.round(item.score * 100)}% Match</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
     });
 
-    booksHTML += "</div>";
-    moviesHTML += "</div>";
+    // Show results
+    document.getElementById("results").innerHTML = resultsHTML;
+    document.querySelector(".results-section").style.display = "block";
 
-    document.getElementById("results").innerHTML = booksHTML + moviesHTML;
+    // Animate results
+    const cards = document.querySelectorAll('.result-card');
+    cards.forEach((card, index) => {
+      setTimeout(() => {
+        card.classList.add('show');
+      }, index * 100);
+    });
+
+  } catch (error) {
+    document.getElementById("loader").style.display = "none";
+    showToast("An error occurred. Please try again.");
   }
+}
+
+// Filter functionality
+document.querySelectorAll('.filter-pill').forEach(pill => {
+  pill.addEventListener('click', function() {
+    // Update active state
+    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+    this.classList.add('active');
+
+    // Apply filter
+    const filter = this.dataset.filter;
+    const cards = document.querySelectorAll('.result-card');
+    
+    cards.forEach(card => {
+      if (filter === 'all' || card.classList.contains(`${filter}-card`)) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  });
+});
+
+// Search input animations
+const searchInput = document.getElementById('titleInput');
+searchInput.addEventListener('focus', () => {
+  searchInput.parentElement.classList.add('focused');
+});
+
+searchInput.addEventListener('blur', () => {
+  searchInput.parentElement.classList.remove('focused');
+});
+
+// Initialize tooltips
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+  return new bootstrap.Tooltip(tooltipTriggerEl)
+});
 </script>
+
 </body>
 </html>
