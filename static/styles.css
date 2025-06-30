@@ -450,3 +450,63 @@ h1, h2, h3, h4 {
     transform: translateY(0);
   }
 }
+/* Add these to your existing styles.css without changing any existing styles */
+
+/* About Section Styles */
+.about-section {
+  padding: 4rem 0;
+  background: var(--background-card);
+}
+
+.about-text {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.feature-item {
+  text-align: center;
+  padding: 2rem;
+  background: var(--background-dark);
+  border-radius: 15px;
+  transition: all 0.3s ease;
+}
+
+.feature-item i {
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+/* Stats Section Styles */
+.stats-section {
+  padding: 4rem 0;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+}
+
+/* Add missing neon-link style */
+.neon-link {
+  color: var(--accent-color);
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.neon-link:hover {
+  color: var(--light);
+  background: var(--accent-color);
+  box-shadow: var(--neon-glow);
+}

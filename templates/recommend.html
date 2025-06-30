@@ -74,7 +74,6 @@
         <button class="filter-pill active" data-filter="all">All Stories</button>
         <button class="filter-pill" data-filter="book">Books</button>
         <button class="filter-pill" data-filter="movie">Movies</button>
-        <button class="filter-pill" data-filter="popular">Most Popular</button>
       </div>
     </div>
   </div>
@@ -193,141 +192,163 @@
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// Check for URL parameters on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const titleParam = urlParams.get('title');
+    if (titleParam) {
+        document.getElementById('titleInput').value = titleParam;
+        getRecommendations();
+    }
+});
+
 // Toast Notifications
 function showToast(msg) {
-  const toast = document.getElementById("toastError");
-  document.getElementById("toastMessage").textContent = msg;
-  toast.classList.add('show');
-  setTimeout(() => hideToast(), 3000);
+    const toast = document.getElementById("toastError");
+    document.getElementById("toastMessage").textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => hideToast(), 3000);
 }
 
 function hideToast() {
-  document.getElementById("toastError").classList.remove('show');
+    document.getElementById("toastError").classList.remove('show');
 }
 
 // Get Recommendations
 async function getRecommendations() {
-  const title = document.getElementById("titleInput").value.trim();
-  if (!title) {
-    showToast("Please enter a title to discover similar stories");
-    return;
-  }
-
-  // Show loader
-  document.getElementById("loader").style.display = "flex";
-  document.querySelector(".results-section").style.display = "none";
-  document.getElementById("noResults").style.display = "none";
-
-  try {
-    const res = await fetch("/recommend", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title })
-    });
-
-    const data = await res.json();
-    
-    // Hide loader
-    document.getElementById("loader").style.display = "none";
-
-    if (!data.length) {
-      document.getElementById("noResults").style.display = "block";
-      return;
+    const title = document.getElementById("titleInput").value.trim();
+    if (!title) {
+        showToast("Please enter a title to discover similar stories");
+        return;
     }
 
-    // Update stats
-    const bookResults = data.filter(item => item.type === "book").length;
-    const movieResults = data.filter(item => item.type === "movie").length;
-    
-    document.querySelector(".total-results .stat-number").textContent = data.length;
-    document.querySelector(".book-results .stat-number").textContent = bookResults;
-    document.querySelector(".movie-results .stat-number").textContent = movieResults;
+    // Show loader
+    document.getElementById("loader").style.display = "flex";
+    document.querySelector(".results-section").style.display = "none";
+    document.getElementById("noResults").style.display = "none";
 
-    // Generate results HTML
-    let resultsHTML = "";
-    data.forEach(item => {
-      const image = item.image_url && item.image_url !== 'nan' 
-        ? item.image_url 
-        : 'https://via.placeholder.com/300x450?text=No+Image';
+    try {
+        const res = await fetch("/recommend", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({ title: title })
+        });
 
-      resultsHTML += `
-        <div class="result-card ${item.type}-card">
-          <div class="card-image">
-            <img src="${image}" alt="${item.title}">
-            <div class="card-overlay">
-              <span class="badge badge-${item.type}">
-                <i class="fas fa-${item.type === 'book' ? 'book' : 'film'}"></i> 
-                ${item.type}
-              </span>
-            </div>
-          </div>
-          <div class="card-content">
-            <h3>${item.title}</h3>
-            <p>${item.description}</p>
-            <div class="card-footer">
-              <div class="similarity-score">
-                <i class="fas fa-brain"></i>
-                <span>${Math.round(item.score * 100)}% Match</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    });
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
 
-    // Show results
-    document.getElementById("results").innerHTML = resultsHTML;
-    document.querySelector(".results-section").style.display = "block";
+        const data = await res.json();
+        
+        // Hide loader
+        document.getElementById("loader").style.display = "none";
 
-    // Animate results
-    const cards = document.querySelectorAll('.result-card');
-    cards.forEach((card, index) => {
-      setTimeout(() => {
-        card.classList.add('show');
-      }, index * 100);
-    });
+        if (!data || data.error || !data.length) {
+            document.getElementById("noResults").style.display = "block";
+            return;
+        }
 
-  } catch (error) {
-    document.getElementById("loader").style.display = "none";
-    showToast("An error occurred. Please try again.");
-  }
+        // Update stats
+        const bookResults = data.filter(item => item.type === "book").length;
+        const movieResults = data.filter(item => item.type === "movie").length;
+        
+        document.querySelector(".total-results .stat-number").textContent = data.length;
+        document.querySelector(".book-results .stat-number").textContent = bookResults;
+        document.querySelector(".movie-results .stat-number").textContent = movieResults;
+
+        // Generate results HTML
+        let resultsHTML = "";
+        data.forEach(item => {
+            const image = item.image_url && item.image_url !== 'nan' 
+                ? item.image_url 
+                : 'https://placehold.co/300x450';
+
+            resultsHTML += `
+                <div class="result-card ${item.type}-card">
+                    <div class="card-image">
+                        <img src="${image}" 
+                             alt="${item.title}"
+                             onerror="this.src='https://placehold.co/300x450'">
+                        <div class="card-overlay">
+                            <span class="badge badge-${item.type}">
+                                <i class="fas fa-${item.type === 'book' ? 'book' : 'film'}"></i> 
+                                ${item.type}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>${item.title}</h3>
+                        <p>${item.description || 'No description available.'}</p>
+                        <div class="card-footer">
+                            <div class="similarity-score">
+                                <i class="fas fa-brain"></i>
+                                <span>${Math.round(item.score * 100)}% Match</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        // Show results
+        const resultsContainer = document.getElementById("results");
+        resultsContainer.innerHTML = resultsHTML;
+        document.querySelector(".results-section").style.display = "block";
+
+        // Animate results
+        const cards = document.querySelectorAll('.result-card');
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.classList.add('show');
+            }, index * 100);
+        });
+
+    } catch (error) {
+        console.error('Error:', error);
+        document.getElementById("loader").style.display = "none";
+        showToast("An error occurred. Please try again.");
+    }
 }
 
 // Filter functionality
 document.querySelectorAll('.filter-pill').forEach(pill => {
-  pill.addEventListener('click', function() {
-    // Update active state
-    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-    this.classList.add('active');
+    pill.addEventListener('click', function() {
+        // Update active state
+        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        this.classList.add('active');
 
-    // Apply filter
-    const filter = this.dataset.filter;
-    const cards = document.querySelectorAll('.result-card');
-    
-    cards.forEach(card => {
-      if (filter === 'all' || card.classList.contains(`${filter}-card`)) {
-        card.style.display = 'block';
-      } else {
-        card.style.display = 'none';
-      }
+        // Apply filter
+        const filter = this.dataset.filter;
+        const cards = document.querySelectorAll('.result-card');
+        
+        cards.forEach(card => {
+            if (filter === 'all' || card.classList.contains(`${filter}-card`)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
     });
-  });
 });
 
 // Search input animations
 const searchInput = document.getElementById('titleInput');
 searchInput.addEventListener('focus', () => {
-  searchInput.parentElement.classList.add('focused');
+    searchInput.parentElement.classList.add('focused');
 });
 
 searchInput.addEventListener('blur', () => {
-  searchInput.parentElement.classList.remove('focused');
+    searchInput.parentElement.classList.remove('focused');
 });
 
-// Initialize tooltips
-var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-  return new bootstrap.Tooltip(tooltipTriggerEl)
+// Handle form submission on Enter key
+searchInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        getRecommendations();
+    }
 });
 </script>
 
