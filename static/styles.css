@@ -477,6 +477,64 @@ h1, h2, h3, h4 {
   border-radius: 15px;
   transition: all 0.3s ease;
 }
+/* Center the About Section text */
+.about-section .section-title,
+.about-section .about-text {
+  text-align: center;
+}
+
+.about-section .feature-grid {
+  justify-content: center;
+}
+
+/* Optional: Center the entire column on smaller screens */
+@media (max-width: 992px) {
+  .about-section .row {
+    text-align: center;
+  }
+}
+/* Center and align all three feature cards in one row */
+.about-section .feature-grid {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 2rem;
+  flex-wrap: nowrap;
+  margin-top: 2rem;
+}
+
+/* Equal-sized feature items */
+.feature-item {
+  flex: 0 0 280px; /* fixed width */
+  text-align: center;
+  padding: 2rem;
+  background: var(--background-dark);
+  border-radius: 15px;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Hover animation */
+.feature-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 20px rgba(108, 92, 231, 0.5);
+}
+
+/* Responsive fallback: stack on small screens */
+@media (max-width: 992px) {
+  .about-section .feature-grid {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+/* Feature card hover effect */
+.feature-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 20px rgba(108, 92, 231, 0.5);
+}
 
 .feature-item i {
   font-size: 2.5rem;
