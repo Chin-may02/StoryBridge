@@ -115,7 +115,6 @@ Pygments==2.18.0
 pymongo==4.13.2
 pyparsing==3.2.1
 PyPDF2==3.0.1
-pypiwin32==223
 PySocks==1.7.1
 python-dateutil==2.9.0.post0
 python-decouple==3.8
