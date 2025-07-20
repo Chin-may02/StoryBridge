@@ -10,3 +10,4 @@ services:
     envVars:
       - key: ENV
         value: production
+    pythonVersion: 3.12.3
